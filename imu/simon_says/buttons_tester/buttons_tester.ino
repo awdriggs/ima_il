@@ -1,17 +1,15 @@
 /*
+  
   Simon Says! by awdriggs
   
   State change detection (edge detection) from Tom Igoe
   https://www.arduino.cc/en/Tutorial/BuiltInExamples/StateChangeDetection
 
-  chatgpt helped write the loop to check all the buttons
-
-  need to write the win condition
+  
 */
 
 // this constant won't change:
-//attach buttons, 
-//REFACTOR this could be abstracted some into an array
+//attach buttons
 const int redButton = 2;
 const int blueButton = 4;
 const int greenButton = 6;
@@ -20,29 +18,33 @@ const int whiteButton = 8;
 const int buttonPins[] = { redButton, blueButton, greenButton, whiteButton };
 
 //attch leds
-//REFACTOR could also be abstracted some
 const int redLed = 3;
 const int blueLed = 5;  // the pin that the LED is attached to
 const int greenLed = 7;
 const int whiteLed = 9;
 
-//button states
+//state of any button?
 int currStates[4] = { 0, 0, 0, 0 };  //initialize states to 0
 int prevStates[4] = { 0, 0, 0, 0 };
+
+// Variables will change:
+int buttonPushCounter = 0;    // counter for the number of button presses
+bool buttonState = false;     // current state of the button
+int lastButtonState = false;  // previous state of the button
 
 bool playing = true;
 
 int allLights[4] = { redLed, blueLed, greenLed, whiteLed };
 const int sequenceLength = 100;
-int sequence[sequenceLength];  //get to 100 and you win! need to write a win condition!
+int sequence[sequenceLength];  //get to 100 and you win!
 int sequenceIndex = 0;         //keep track of the current index, start at 0
 int userIndex = 0;             //keep track of the users inputs. maybe this should go in the checkbuttons
 int pause = 500;
-int timeLimit = 100;  //about 100 * 50 = 5000 seconds right now?
+int timeLimit = 1000;  //about ?? seconds right now?
 
 void setup() {
+  //this could be refactored!
   // initialize the button pin as a input:
-  // REFACTOR could put this in a loop
   pinMode(redButton, INPUT);
   pinMode(blueButton, INPUT);
   pinMode(greenButton, INPUT);
@@ -52,77 +54,114 @@ void setup() {
   pinMode(blueLed, OUTPUT);
   pinMode(greenLed, OUTPUT);
   pinMode(whiteLed, OUTPUT);
-  
   // initialize serial communication:
   Serial.begin(9600);
 
   //calculate the entire sequence
-  //TODO add a random seed
   for (int i = 0; i < sequenceLength; i++) {
     int randomIndex = random(0, 4);  //num lights
     Serial.println(randomIndex);
     sequence[i] = allLights[randomIndex];
   }
 
-  //flash the lights a few times, to get started
+  // for(int i = 0; i < sequenceLength; i++){
+  //   Serial.println(sequence[i]);
+  // }
+
   for (int i = 0; i < 5; i++) {
     flashLights();  //flash all lights on and off at the start, also used for a lose sequence
   }
 }
 
+
 void loop() {
 
-  if (playing) { //check to see if you are playing
+  // // read the pushbutton input pin:
+  // buttonState = digitalRead(buttonPin);
+
+  // // compare the buttonState to its previous state
+  // if (buttonState != lastButtonState) {
+  //   // if the state has changed, increment the counter
+  //   if (buttonState == HIGH) {
+  //     // if the current state is HIGH then the button went from off to on:
+  //     buttonPushCounter++;
+  //     Serial.println("on");
+  //     Serial.print("number of button pushes: ");
+  //     Serial.println(buttonPushCounter);
+  //   } else {
+  //     // if the current state is LOW then the button went from on to off:
+  //     Serial.println("off");
+  //   }
+  //   // Delay a little bit to avoid bouncing
+  //   delay(50);
+  // }
+  // // save the current state as the last state, for next time through the loop
+  // lastButtonState = buttonState;
+
+
+  // turns on the LED every four button pushes by checking the modulo of the
+  // button push counter. the modulo function gives you the remainder of the
+  // division of two numbers:
+  // if (buttonPushCounter % 4 == 0) {
+  //   digitalWrite(ledPin, HIGH);
+  // } else {
+  //   digitalWrite(ledPin, LOW);
+  // }
+
+
+
+
+
+  if (playing) {
     Serial.println("start");
 
     playSequence();
     // Serial.println("end");
-    delay(100);
+    delay(1000);
 
     Serial.println("user's turn");
 
     //loop until playing is false, how? either a the time limit is hit or a wrong button is pressed
-    int timeTaken = 0;  //in loops
+    bool thisRound = true;
+    int timeTaken = 0;  //in seconds
     userIndex = 0;      //reset user index to check a new sequence
-    
-    while (true) { //repeats until a false button is pressed or the users has keyed in the whole sequence
-      int buttonPressed = checkButtons(); //returns the button pin or -1 if no checked buttons are pressed
-      if (buttonPressed >= 0) { //heard a button!
-        if (buttonPressed + 1 == sequence[userIndex]) { //check to see if the button matches the light, light is always one more than the button pin
-          Serial.println("correct");
-          timeTaken = 0;  //reset for next round
 
-          //users has the whole sequence correct!
-          if(userIndex == sequenceIndex){
-            sequenceIndex++; //increase the sequence count
-            break; //break out of the while loop and play
-          } else {
-            userIndex++; //button was right so move to the next light in sequence
-            continue; //repeat the while loop
-          }
+    while (thisRound) {
+      int buttonPressed = checkButtons();
+      if (buttonPressed >= 0) {
+        if (buttonPressed + 1 == sequence[userIndex]) {
+          Serial.println("correct");
+          userIndex++;
+          timeTaken = 0;  //reset for next round
         } else {
           Serial.println("incorrect");
-          playing = false; //set playing to false
-          break;
-          //thisRound = false;
+          playing = false;
+          thisRound = false;
         }
       }
-      Serial.println("waiting");
-      delay(50); //delay to give the user time, this could increase to make the game harder
+      delay(500);
       timeTaken++;
-      
+      Serial.println("waiting");
 
       if (timeTaken > timeLimit) {
         Serial.println("time is up");
-        playing = false; 
-        break; //time is up so end the game
+        thisRound = false;
+        playing = false;
       }
+
+
+      //reset time taken? for each correct punch?
     }
-    
-    //game is over
+
+    //Serial.println(buttonState);
+    //see which button was pressed
+
+    //
+
+    // sequenceIndex++; //keep track of the current index
+    // delay(500);
     if (!playing) {
       Serial.println("game over");
-      //play end sounds
     }
   }
 }
@@ -154,8 +193,6 @@ void playSequence() {
 }
 
 int checkButtons() {
-  updateStates(); //update before checking new states
-
   for (int i = 0; i < 4; ++i) {  //read the current state of each button
     currStates[i] = digitalRead(buttonPins[i]);
   }
@@ -167,19 +204,31 @@ int checkButtons() {
         Serial.print("user pressed: ");
         Serial.println(buttonPins[i]);
         digitalWrite(allLights[i], HIGH);  //flash the lights
-        delay(100);
+        delay(250);
         digitalWrite(allLights[i], LOW);
 
         //update states! needed here?
-        
+
         return buttonPins[i];  //return the button that was pressed
       }
       // Delay a little bit to avoid bouncing
       //delay(50);
-      //return buttonPins[i]; //return the pin that was pressed?
+      //return buttonPins[i]; //retun the pin that was pressed?
     }
   }
+  // if (currStates != prevStates){
+  //   //a butotn was pressed? which one?
+  //   Serial.println("button heard!");
+  //   for(int i = 0; i < 4; i++){
+  //     if(currStates[i] != prevStates[i]){
+  //       Serial.println(i);
+  //       break;
+  //     }
+  //   }
+  // }
+
   
+
   //got to here?
   //delay(10); //for stabiltiy
   return -1;  //no button was pressed
