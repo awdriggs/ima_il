@@ -26,6 +26,8 @@ const int blueLed = 5;  // the pin that the LED is attached to
 const int greenLed = 7;
 const int whiteLed = 9;
 
+
+
 //button states
 int currStates[4] = { 0, 0, 0, 0 };  //initialize states to 0
 int prevStates[4] = { 0, 0, 0, 0 };
@@ -39,6 +41,9 @@ int sequenceIndex = 0;         //keep track of the current index, start at 0
 int userIndex = 0;             //keep track of the users inputs. maybe this should go in the checkbuttons
 int pause = 500;
 int timeLimit = 100;  //about 100 * 50 = 5000 seconds right now?
+
+//notes
+int notes[]= {261, 329, 392, 440};
 
 void setup() {
   // initialize the button pin as a input:
@@ -65,7 +70,7 @@ void setup() {
   }
 
   //flash the lights a few times, to get started
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     flashLights();  //flash all lights on and off at the start, also used for a lose sequence
   }
 }
@@ -75,9 +80,10 @@ void loop() {
   if (playing) { //check to see if you are playing
     Serial.println("start");
 
+    delay(1000);
     playSequence();
     // Serial.println("end");
-    delay(100);
+    //delay(100);
 
     Serial.println("user's turn");
 
@@ -132,9 +138,11 @@ void flashLights() {
 
   for (int i = 0; i < 5; i++) {
     digitalWrite(flashSequence[i], HIGH);
+    tone(12, notes[i], pause);
   }
 
   delay(pause);
+  
 
   for (int i = 0; i < 5; i++) {
     digitalWrite(flashSequence[i], LOW);
@@ -147,9 +155,15 @@ void playSequence() {
   for (int i = 0; i <= sequenceIndex; i++) {
     Serial.println(sequence[i]);
     digitalWrite(sequence[i], HIGH);
-    delay(500);
+    // Serial.print("pin index");
+    int noteIndex = getNote(sequence[i]);
+    // Serial.println(index);    
+    tone(12, notes[noteIndex], 500); //sequence index
+    Serial.print("sequence note ");
+    Serial.println(notes[i]);
+    delay(pause);
     digitalWrite(sequence[i], LOW);
-    delay(500);
+    delay(pause);
   }
 }
 
@@ -167,7 +181,10 @@ int checkButtons() {
         Serial.print("user pressed: ");
         Serial.println(buttonPins[i]);
         digitalWrite(allLights[i], HIGH);  //flash the lights
-        delay(100);
+        tone(12, notes[i], pause);
+        Serial.print("note");
+        Serial.println(notes[i]);
+        delay(pause);
         digitalWrite(allLights[i], LOW);
 
         //update states! needed here?
@@ -190,4 +207,20 @@ void updateStates(){
   for (int i = 0; i < 4; i++) {
     prevStates[i] = currStates[i];
   }
+}
+
+int getNote(int pin){
+  Serial.print("pin passed to index of");
+  Serial.println(pin);
+  
+  for(int a = 0; a < 4; a++){
+    // Serial.print("all lights ");
+    // Serial.print(a);
+    // Serial.println(allLights[a]);
+    // Serial.println(allLights[a]);
+    if(allLights[a] == pin){
+      return a;
+    } 
+  }
+  return -1;
 }
