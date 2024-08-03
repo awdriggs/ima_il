@@ -17,7 +17,7 @@ const int intervalInfo = 5000;            // interval at which to update the boa
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
 /////// WiFi Settings ///////
 
-char serverAddress[] = "https://arduino-click-listener.glitch.me/";  // server address
+char serverAddress[] = "arduino-click-listener.glitch.me/";  // server address
 int port = 8080;
 
 WiFiClient wifi;

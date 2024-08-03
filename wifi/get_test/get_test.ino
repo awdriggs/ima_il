@@ -40,6 +40,7 @@
 // network socket to server. For HTTP instead of HTTPS,
 // use WiFiClient instead of WiFiSSLClient:
 WiFiSSLClient netSocket;
+/* WiFiClicent netSocket; */
 // Server port. For HTTP instead of HTTPS, use 80 instead of 443:
 const int port = 443;
 // server name and API route:

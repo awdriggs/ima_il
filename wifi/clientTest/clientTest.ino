@@ -23,7 +23,8 @@ int status = WL_IDLE_STATUS;
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
 //IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "www.google.com";    // name address for Google (using DNS)
+/* char server[] = "www.google.com";    // name address for Google (using DNS) */
+char server[] = "arduino-click-listener.glitch.me/";    // 
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
@@ -63,6 +64,7 @@ void setup() {
   printWiFiStatus();
 
   Serial.println("\nStarting connection to server...");
+  client.println("GET /clicks");
   // if you get a connection, report back via serial:
   if (client.connect(server, 443)) {
     Serial.println("connected to server");
