@@ -1,31 +1,31 @@
 #include "secret.hpp"
 
 /*
-  Datalogger client
+   Datalogger client
 
-  Connects to a server using HTTPS and uploads data.
-  Also handles HTTP error 302 redirects from Google Sheets scripts. 
-  For more on this, see https://developers.google.com/apps-script/guides/content#redirects
+   Connects to a server using HTTPS and uploads data.
+   Also handles HTTP error 302 redirects from Google Sheets scripts.
+   For more on this, see https://developers.google.com/apps-script/guides/content#redirects
 
-  This client works with the google sheets datalogger found in this repository
+   This client works with the google sheets datalogger found in this repository
 
-  Works with MKR1010, MKR1000, Nano 33 IoT
-  Uses the following libraries:
-   http://librarymanager/All#WiFi101  // use this for MKR1000
-   http://librarymanager/All#WiFiNINA  // use this for MKR1010, Nano 33 IoT
-   http://librarymanager/All#ArduinoHttpClient
-   http://librarymanager/All#Arduino_JSON
-   http://librarymanager/All#Adafruit_TCS34725 (for the sensor)
+   Works with MKR1010, MKR1000, Nano 33 IoT
+   Uses the following libraries:
+http://librarymanager/All#WiFi101  // use this for MKR1000
+http://librarymanager/All#WiFiNINA  // use this for MKR1010, Nano 33 IoT
+http://librarymanager/All#ArduinoHttpClient
+http://librarymanager/All#Arduino_JSON
+http://librarymanager/All#Adafruit_TCS34725 (for the sensor)
 
-  In the arduino_secrets.h file:
-  #define SECRET_SSID ""           //  your network SSID (name)
-  #define SECRET_PASS ""           // your network password 
-  #define SECRET_DEPLOYMENT_ID  "" // your Google scripts deployment ID
+In the arduino_secrets.h file:
+#define SECRET_SSID ""           //  your network SSID (name)
+#define SECRET_PASS ""           // your network password
+#define SECRET_DEPLOYMENT_ID  "" // your Google scripts deployment ID
 
-  created 23 May 2021
-  updated 8 Apr 2023
-  by Tom Igoe
-*/
+created 23 May 2021
+updated 8 Apr 2023
+by Tom Igoe
+ */
 // include required libraries and config files
 #include <SPI.h>
 //#include <WiFi101.h>        // for MKR1000 modules
@@ -39,12 +39,12 @@
 
 // network socket to server. For HTTP instead of HTTPS,
 // use WiFiClient instead of WiFiSSLClient:
-WiFiSSLClient netSocket;
-/* WiFiClicent netSocket; */
+/* WiFiSSLClient netSocket; */
+WiFiClient netSocket;
 // Server port. For HTTP instead of HTTPS, use 80 instead of 443:
-const int port = 443;
+const int port = 80;
 // server name and API route:
-const char server[] = "arduino-click-listener.glitch.me/";
+const char server[] = "arduino-click-listener.glitch.me";
 String route = "/clicks";
 // Make a HTTP client:
 HttpClient client(netSocket, server, port);
@@ -54,7 +54,7 @@ JSONVar data;
 // the content type to post data to server:
 const char contentType[] = "application/json";
 // set a location for the sensor:
-String location = "north window";
+/* String location = "north window"; */
 
 // request timestamp in ms:
 long lastRequestTime = 0;
@@ -84,7 +84,7 @@ void setup() {
   data["location"] = location;
   data["msg"] = "hello from arduino";
 
-Serial.println(macAddress);
+  Serial.println(macAddress);
   // update the Google scripts deployment ID. Only needed for Google apps script:
   /* route.replace("DEPLOYMENT", SECRET_DEPLOYMENT_ID); */
   // attempt to connect to network:
@@ -151,9 +151,9 @@ void loop() {
 }
 
 /*
-  readSensor. You could replace this with any sensor, as long as
-  you put the results into the data JSON object
-*/
+   readSensor. You could replace this with any sensor, as long as
+   you put the results into the data JSON object
+ */
 void readSensor() {
   /* // get lux and color temperature from sensor: */
   /* uint16_t r, g, b, c, colorTemp, lux; */
@@ -166,9 +166,9 @@ void readSensor() {
 }
 
 /*
-  This function creates a new HTTPClient to get the result
-  from the google script redirect
-*/
+   This function creates a new HTTPClient to get the result
+   from the google script redirect
+ */
 int redirectRequest() {
   String tempServer;
   String tempRoute;
